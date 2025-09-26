@@ -46,3 +46,29 @@ def run_api():
 # ================================
 # 🔹 Interfaz gráfica con Tkinter
 # ================================
+class PeliculasGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("peliculas REST + oracle .")
+        self.root.geometry("700*500")
+
+        ttk.Label(root, text="peliculas disponibles", font=("Arial", 16)).pack(pady=10)
+
+        self.frame = ttk.Frame(root)
+        self.frame.pack(fill="both", expand=True)
+
+        self.mostrar_peliculas()
+
+    def mostrar_peliculas(self):
+        try:
+            response = requests.get("http://127.0.0.1:5000/peliculas")
+            response.raise_for_status()
+            data = response.json()
+
+            for i, pelicula in enumerate(data):
+                col = i % 2
+                frame_peli = ttk.Frame(self.frame, padding=10, relief="ridge")
+                frame_peli.grid(row=0, column=col, padx=10, pady=10, sticky="n")
+
+            #imagen
+            
