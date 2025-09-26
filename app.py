@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PIL import Image, ImageTK
+from PIL import Image, ImageTk
 import requests
 import oracledb
 from io import BytesIO
@@ -15,20 +15,31 @@ DB_USER = "system"
 DB_PASS = "Tapiero123"
 DB_DSN = "localhost:1521/orcl"
 
-peliculas = [
-    {
-        "id": 1,
-        "titulo": "inception",
-        "descripcion": "un ladron roba secretos del subconciente .",
-        "poster": "https://m.media-amazon.com/images/I/51s+o2aD4nL._AC_.jpg"
-    },
-    {
-        "id": 2,
-        "titulo": "the matrix",
-        "descripcion": "un hacker descubre la verdad sobre su realidad .",
-        "poster": "https://m.media-amazon.com/images/I/51EG732BV3L._AC_SY445_.jpg"
-    }
-]
+# ================================
+# 🔹 API pública (Ghibli Films)
+# ================================
+def obtener_peliculas():
+    try:
+        url = "https://ghibliapi.vercel.app/films"
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Mapear a nuestro formato
+        peliculas = []
+        for i, peli in enumerate(data[:4]):  # solo 4 primeras para la demo
+            peliculas.append({
+                "id": i + 1,
+                "titulo": peli["title"],
+                "descripcion": peli["description"],
+                "poster": peli["image"]
+            })
+        return peliculas
+    except Exception as e:
+        print(f"⚠️ Error obteniendo películas: {e}")
+        return []
+
+peliculas = obtener_peliculas()
 
 # ================================
 # 🔹 API REST con Flask
@@ -42,17 +53,16 @@ def get_peliculas():
 def run_api():
     app.run(port=5000, debug=False, use_reloader=False)
 
-
 # ================================
 # 🔹 Interfaz gráfica con Tkinter
 # ================================
 class PeliculasGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("peliculas REST + oracle .")
-        self.root.geometry("700*500")
+        self.root.title("Películas REST + Oracle")
+        self.root.geometry("900x600")
 
-        ttk.Label(root, text="peliculas disponibles", font=("Arial", 16)).pack(pady=10)
+        ttk.Label(root, text="Películas disponibles", font=("Arial", 16)).pack(pady=10)
 
         self.frame = ttk.Frame(root)
         self.frame.pack(fill="both", expand=True)
@@ -68,52 +78,53 @@ class PeliculasGUI:
             for i, pelicula in enumerate(data):
                 col = i % 2
                 frame_peli = ttk.Frame(self.frame, padding=10, relief="ridge")
-                frame_peli.grid(row=0, column=col, padx=10, pady=10, sticky="n")
+                frame_peli.grid(row=i // 2, column=col, padx=10, pady=10, sticky="n")
 
-            #imagen
-            img_data = requests.get(pelicula["poster"]).content
-            img = Image.open(BytesIO(img_data)).resize((200, 300))
-            photo = ImageTK.PhotoImage(img)
+                # Imagen desde API
+                img_data = requests.get(pelicula["poster"], timeout=10).content
+                img = Image.open(BytesIO(img_data)).resize((200, 300))
+                photo = ImageTk.PhotoImage(img)
 
-            lbl_img = ttk.Label(frame_peli, image=photo)
-            lbl_img.image = photo
-            lbl_img.pack()
+                lbl_img = ttk.Label(frame_peli, image=photo)
+                lbl_img.image = photo
+                lbl_img.pack()
 
-            #titulo y descripcion
-            ttk.Label(frame_peli, text=pelicula["titulo"], font=("Arial", 14, "bold")).pack(pady=5)
-            ttk.Label(frame_peli, text=pelicula["descripcion"], wraplength=200).pack()
+                # Título y descripción
+                ttk.Label(frame_peli, text=pelicula["titulo"], font=("Arial", 14, "bold")).pack(pady=5)
+                ttk.Label(frame_peli, text=pelicula["descripcion"], wraplength=250).pack()
 
-            #guardar en oracle  
-            self.guardar_en_oracle(pelicula)
-        
+                # Guardar en Oracle
+                self.guardar_en_oracle(pelicula)
+
         except Exception as e:
-            messagebox.showerror("error", f"no se pudieron cargar peliculas: {e}")
-    
+            messagebox.showerror("Error", f"No se pudieron cargar películas: {e}")
+
     def guardar_en_oracle(self, pelicula):
         try:
             connection = oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN)
             cursor = connection.cursor()
 
-            cursor.execute("""
-                INSERT INTO peliculas (id, titulo, descripcion, poster)
-                VALUES (:1, :2, :3, :4)
-            """, (pelicula["id"], pelicula["titulo"], pelicula["descripcion"], pelicula["poster"]))
+            # Evitar duplicados
+            cursor.execute("SELECT COUNT(*) FROM peliculas WHERE id = :1", (pelicula["id"],))
+            existe = cursor.fetchone()[0]
 
-            connection.commit()
+            if existe == 0:
+                cursor.execute("""
+                    INSERT INTO peliculas (id, titulo, descripcion, poster)
+                    VALUES (:1, :2, :3, :4)
+                """, (pelicula["id"], pelicula["titulo"], pelicula["descripcion"], pelicula["poster"]))
+                connection.commit()
+
             cursor.close()
             connection.close()
         except Exception as e:
-            print(f"⚠️ error guardando en oracle: {e}")
+            print(f"⚠️ Error guardando en Oracle: {e}")
 
 # ================================
 # 🔹 Main
 # ================================
 if __name__ == "__main__":
-    # Correr API en hilo aparte
     threading.Thread(target=run_api, daemon=True).start()
-
-    # GUI
     root = tk.Tk()
     app_gui = PeliculasGUI(root)
     root.mainloop()
-

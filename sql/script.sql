@@ -33,3 +33,7 @@ BEGIN
     :NEW.id := seq_peliculas.NEXTVAL;
 END;
 /
+
+COMMIT;
+
+SELECT * FROM PELICULAS;
