@@ -71,4 +71,49 @@ class PeliculasGUI:
                 frame_peli.grid(row=0, column=col, padx=10, pady=10, sticky="n")
 
             #imagen
-            
+            img_data = requests.get(pelicula["poster"]).content
+            img = Image.open(BytesIO(img_data)).resize((200, 300))
+            photo = ImageTK.PhotoImage(img)
+
+            lbl_img = ttk.Label(frame_peli, image=photo)
+            lbl_img.image = photo
+            lbl_img.pack()
+
+            #titulo y descripcion
+            ttk.Label(frame_peli, text=pelicula["titulo"], font=("Arial", 14, "bold")).pack(pady=5)
+            ttk.Label(frame_peli, text=pelicula["descripcion"], wraplength=200).pack()
+
+            #guardar en oracle  
+            self.guardar_en_oracle(pelicula)
+        
+        except Exception as e:
+            messagebox.showerror("error", f"no se pudieron cargar peliculas: {e}")
+    
+    def guardar_en_oracle(self, pelicula):
+        try:
+            connection = oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN)
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                INSERT INTO peliculas (id, titulo, descripcion, poster)
+                VALUES (:1, :2, :3, :4)
+            """, (pelicula["id"], pelicula["titulo"], pelicula["descripcion"], pelicula["poster"]))
+
+            connection.commit()
+            cursor.close()
+            connection.close()
+        except Exception as e:
+            print(f"⚠️ error guardando en oracle: {e}")
+
+# ================================
+# 🔹 Main
+# ================================
+if __name__ == "__main__":
+    # Correr API en hilo aparte
+    threading.Thread(target=run_api, daemon=True).start()
+
+    # GUI
+    root = tk.Tk()
+    app_gui = PeliculasGUI(root)
+    root.mainloop()
+
