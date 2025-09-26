@@ -2,7 +2,11 @@
 
 <img width="203" height="193" alt="image" src="https://github.com/user-attachments/assets/acd0ce8a-579d-497b-a76e-797430d0bb13" />  
 
-# 🎬 Programa en Python: Películas REST + Oracle .
+# 🎬 Programa en Python: Películas REST + Oracle . 
+
+<img width="2557" height="1077" alt="image" src="https://github.com/user-attachments/assets/c940e7d9-933e-42f7-aecf-17b55aa2b322" />
+
+<img width="2553" height="1079" alt="image" src="https://github.com/user-attachments/assets/ffedc23b-27f0-48eb-89cc-865c3ede5ad6" />
 
 Este proyecto en **Python** implementa :
 
