@@ -1,19 +1,25 @@
-# programa_peliculas_python_rest_oracle .
+# programa_peliculas_python_rest_oracle
 
 <img width="203" height="193" alt="image" src="https://github.com/user-attachments/assets/acd0ce8a-579d-497b-a76e-797430d0bb13" />  
 
-# 🎬 Programa en Python: Películas REST + Oracle :
+# 🎬 Programa en Python: Películas REST + Oracle .
+
 Este proyecto en **Python** implementa :
 
 - **Frontend (Interfaz gráfica con Tkinter):** muestra dos películas (imagen, título, descripción) .  
 - **Backend REST (Flask):** expone las películas en endpoints HTTP .  
 - **Base de datos Oracle:** guarda la información de las películas (usando `oracledb`) .  
 
+---
+
 ## 🔹 Flujo
-1. El frontend consume el **API REST** vía `requests` .  
-2. Los datos obtenidos se almacenan en **Oracle** .  
+1. El frontend consume el **API REST** vía `requests`.  
+2. Los datos obtenidos se almacenan en **Oracle**.  
 
 ---
+
+## 🔹 Script SQL: Creación de tabla `PELICULAS`
+```sql
 -- ==========================================
 -- Script SQL: Creación de tabla PELICULAS
 -- ==========================================
@@ -50,8 +56,9 @@ BEGIN
 END;
 /
 
-## 📌 Script principal: `app.py`
-```python
+📌 Script principal: app.py
+python
+Copiar código
 #!/usr/bin/env python3
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -173,31 +180,18 @@ if __name__ == "__main__":
     app_gui = PeliculasGUI(root)
     root.mainloop()
 
-🔹 Script DDL Oracle :
-Ejecuta en Oracle :
-
-CREATE TABLE peliculas (
-    id NUMBER PRIMARY KEY,
-    titulo VARCHAR2(100),
-    descripcion VARCHAR2(500),
-    poster VARCHAR2(300)
-);
-
-🔹 requirements.txt :
+🔹 requirements.txt
 Flask==3.0.3
 requests==2.32.3
 oracledb==3.3.0
 Pillow==10.2.0
 
-🚀 Ejecución :
-Crea y activa tu entorno virtual .
-
-Instala dependencias :
+🚀 Ejecución
+Crea y activa tu entorno virtual.
+Instala dependencias:
 bash
 pip install -r requirements.txt
 
-Ejecuta el programa :
+Ejecuta el programa:
 bash
 python app.py
-
-Se abre la ventana con las dos películas, traídas vía REST y almacenadas en Oracle .
